@@ -77,12 +77,6 @@
 				t.show(headerOfBtn);
 	        });
 	    },
-		createSeq: function(header, type){
-		    var headerTr = header.find('tr');
-			//TODO: can not support colspan and rowspan together now
-			var regArr [];
-			
-		},
 	    addTips: function(headerEle){
 	        var headerTips = headerEle.find('.tips');
 	        if(headerTips.length>0){

@@ -1,4 +1,3 @@
-
 (function(exports){
 	var TableScreen = new Class;
 

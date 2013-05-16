@@ -1,5 +1,5 @@
 (function(exports){
-  var Resize = new Class;
+	var Resize = new Class;
 	Resize.include({
 	    init: function(resizeEle, des, option){
 	        var r = this;
@@ -34,6 +34,8 @@
 	        r.regSize = r.oriSize;
 	        
 	        //bind and set default size
+	        r.resizeFlat = false;
+	        console.log(this.resizeFlat)
 	        r.resizableStart();
 	        r.root.resize();
 	    },
@@ -51,8 +53,12 @@
 	        var checkFunc = this.option.rangeCheck||function(){return true;};
 	        return checkFunc(val);
 	    },
+	    isResizing: function(){
+	        return this.resizeFlat;
+	    },
 	    resizableStart: function(){
 	        var r = this;
+	        r.resizeFlat = true;
 	        
 	    	function mousemove(e){
 	            r.setHover(e)
@@ -79,9 +85,12 @@
 		            if(r.root.filter('.resizingx,.resizingy').length==0){
 		                return;
 		            }
-		            r.endEditing(r.des);
 		            r.setHover(r.des)
 		            r.resize();
+		            if(r.option.callBack){
+		                r.option.callBack(r.root);
+		            }
+		            r.endEditing(r.des);
 	            });
 	        }
 	        r.root.mousemove(mousemove);
@@ -94,15 +103,19 @@
 		        r.root.unbind('mousemove', mousemove);
 		        r.root.unbind('mouseleave', mouseleave)
 				r.root.unbind('mousedown', mousedown);
-				r.root[r.sizeFunc]('auto');
+	        	r.root.css(this.sizeFunc,'auto');
+	       		r.root.resize();
 			}
+			
+	        r.root.resize();
 	    },
 	    resizableEnd: function(){
-	        this.stopResizable();   
+	        this.stopResizable();  
+	        this.resizeFlat = false;
 	    },
 	    distroy: function(){
+	        this.resizableEnd();
 	        this.resizer.remove();
-	        this.stopResizable();
 	    },
 	    getRulerDom: function(des, id){
 	        var r = this;
@@ -114,8 +127,8 @@
 	    },
 	    getPostionStyle: function(pos){
 	        var style = '';
-	        if(pos.top!=undefined)style = style += ('top:'+pos.top+'px;');
-	        if(pos.left!=undefined)style = style += ('left:'+pos.left+'px;');
+	        if(pos.top!=undefined)style += ('top:' + pos.top + 'px;');
+	        if(pos.left!=undefined)style += ('left:' + pos.left + 'px;');
 	        return style;
 	    },
 	    getResizeRelativePosition: function(des, pos){
@@ -276,6 +289,9 @@
 		    }
 		    option.startResizable = function(){
 		        resize.resizableStart();
+		    }
+		    option.isResizing = function(){
+		        return resize.isResizing();
 		    }
 	    }
 	    return resizeEle;

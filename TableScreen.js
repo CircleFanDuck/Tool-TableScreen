@@ -1,4 +1,3 @@
-
 (function(exports){
 	var TableScreen = new Class;
 
@@ -80,9 +79,9 @@
 	        var parentHeader = this.getParentHeader(headerEle.attr(this.seqName));
 	        
 	        if(parentHeader&&parentHeader.length){
-	            title = $.trim(parentHeader.text())+' >> '+title;
+	            var children = parentHeader.children().filter(function(){return $(this).filter('.tips').length==0;});
+	            title = $.trim(parentHeader.children(function(){return $(this).filter('.tips').length==0;}).text())+' >> '+title;
 	        }
-
 	        //TODO: use templete next time
 	        headerEle.append(
 			    '<div class="hideBtn tips" id="'+id+'">'

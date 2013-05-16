@@ -80,7 +80,7 @@
 	        
 	        if(parentHeader&&parentHeader.length){
 	            var children = parentHeader.children().filter(function(){return $(this).filter('.tips').length==0;});
-	            title = $.trim(parentHeader.children(function(){return $(this).filter('.tips').length==0;}).text())+' >> '+title;
+	            title = $.trim(children.text())+' >> '+title;
 	        }
 
 	        //TODO: use templete next time

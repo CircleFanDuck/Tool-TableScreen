@@ -7,7 +7,7 @@
             d.getEventPos = 'getEvent'+des;
             ele.css('overflow-'+des, 'hidden');
             
-          ele.mousedown(function(e){
+            ele.mousedown(function(e){
 	            d.positionStart = d[d.getEventPos]();
 	            function syncScroll(e){
 	                var positionEnd = d[d.getEventPos]();

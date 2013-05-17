@@ -30,34 +30,61 @@
 	        r.resizer = $('#' + r.id);
 	        
 	        //set default size
-	        r.oriSize = r.root[r.sizeFunc]();
+	        r.oriSize = r.getSize(r.root);
 	        r.regSize = r.oriSize;
 	        
 	        //bind and set default size
 	        r.resizeFlat = false;
-	        console.log(this.resizeFlat)
+
+
 	        r.resizableStart();
 	        r.root.resize();
+	    },
+	    getSize: function(ele){
+	        return ele[this.sizeFunc]();
+	    },
+	    setSize: function(ele, size){
+	        return ele[this.sizeFunc](size);
+	    },
+	    getNSize: function(ele){
+	        return ele[this.nSizeFunc]();
+	    },
+	    setNSize: function(ele, size){
+	        return ele[this.nSizeFunc](size);
+	    },
+	    getEventPostion: function(e){
+	        return this[this.eventFunc](e);
 	    },
 	    getInitSize: function(){
 	        var option = this.option;
 	        if(option.initSize==undefined){
-	            return null;
-	        }
-	        if(option.initSize > this.oriSize){
 	            return this.oriSize;
 	        }
-	        return option.initSize;
+	        if(this.oriSize  > option.initSize){
+	            return option.initSize;
+	        }
+	        return this.oriSize;
+	    },
+	    defaultFunc: function(){
+	        return true;
 	    },
 	    inRange: function(val){
-	        var checkFunc = this.option.rangeCheck||function(){return true;};
+	        var checkFunc = this.option.rangeCheck||this.defaultFunc;
 	        return checkFunc(val);
+	    },
+	    inEffective: function(){
+	        var checkFunc = this.option.effectiveCheck||this.defaultFunc;
+	    	return checkFunc(this);	    
 	    },
 	    isResizing: function(){
 	        return this.resizeFlat;
 	    },
 	    resizableStart: function(){
 	        var r = this;
+	        if(r.resizeFlat){
+	            return;
+	        }
+	        
 	        r.resizeFlat = true;
 	        
 	    	function mousemove(e){
@@ -96,22 +123,30 @@
 	        r.root.mousemove(mousemove);
 	        r.root.mouseleave(mouseleave)
 			r.root.mousedown(mousedown);
-			r.root[r.sizeFunc](r.getInitSize())
+			r.setSize(r.root, r.getInitSize());
 	    
 			r.stopResizable = function(){
-			    r.regSize = r.root.width();
+			    var nSize = r.getNSize(r.root);
+	        	r.setSize(r.root, 'auto');
+			    var size = r.getSize(r.root);
+	        	r.setSize(r.root, size);
+	        	r.setNSize(r.root, nSize);
+	        	console.log(r.des +': '+size+'*'+nSize);
+	        	
+			    if(!r.resizeFlat){
+			        return;
+			    }
 		        r.root.unbind('mousemove', mousemove);
 		        r.root.unbind('mouseleave', mouseleave)
 				r.root.unbind('mousedown', mousedown);
-	        	r.root.css(this.sizeFunc,'auto');
 	       		r.root.resize();
+	            r.resizeFlat = false;
 			}
 			
 	        r.root.resize();
 	    },
 	    resizableEnd: function(){
 	        this.stopResizable();  
-	        this.resizeFlat = false;
 	    },
 	    distroy: function(){
 	        this.resizableEnd();
@@ -157,13 +192,13 @@
 	        var r = this;
 	        var resizePos = r.getLeftTopCorner(r.root);
 		    if(r.root.filter(r.resizeClass).length!=0){
-	            var newSize = r.approachSmartLine(des, r[r.eventFunc](e) - resizePos[des]);
+	            var newSize = r.approachSmartLine(des, r.getEventPostion(e) - resizePos[des]);
 	            
 	            if(!r.inRange(newSize)){
 	                return;
 	            }
-		        r.root[r.sizeFunc](newSize);
-		        var style = r.positionFuc +':' + (r[r.eventFunc](e));
+	            r.setSize(r.root, newSize);
+		        var style = r.positionFuc +':' + r.getEventPostion(e);
 		        r.resizer.attr('style', r.resizer.attr('style')+ style+';');
 		    }
 	    },
@@ -178,7 +213,7 @@
 	        var r = this;
 	        var des = r.des;
 	        var flag = r.inResizeFuzzyField(e, r.FUZZY_WEIGHT, des);
-		    if(flag){
+		    if(this.inEffective(this)&&flag){
 		        r.startHover(des);
 		    }else{
 		        r.endHover(des);
@@ -188,7 +223,7 @@
 	        var r = this;
 	        r.root.addClass(r.hoverClass);
 	        var resizer = r.resizer.show();
-	        resizer[r.nSizeFunc]($(document.body)[r.nSizeFunc]());
+	        r.setNSize(resizer, r.getNSize($(document.body)));
 	        
 	        var offSetAttr = r.npositionFuc + ':' + r.getDocumentScroll((des=='x'?'y':'x'))+'px;';
 	        resizer.attr('style', resizer.attr('style')+ r.positionFuc +':'+ r.getRightBottomCorner(r.root)[des]+'px'+';'+offSetAttr);
@@ -264,7 +299,7 @@
 			return null;
 		},
 	    inResizeFuzzyField: function(e, fuzzy, des){
-	        var pos = this[this.eventFunc](e);
+	        var pos = this.getEventPostion(e)
 	        if(this.getRightBottomCorner(this.root)[des] - pos <=fuzzy){
 	            return true;
 	        }
@@ -292,6 +327,13 @@
 		    }
 		    option.isResizing = function(){
 		        return resize.isResizing();
+		    }
+		    option.checkEffective = function(){
+		        if(resize.inEffective()){
+		            resize.resizableStart();
+		        }else{
+		            resize.resizableEnd();
+		        }
 		    }
 	    }
 	    return resizeEle;

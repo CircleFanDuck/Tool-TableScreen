@@ -6,20 +6,23 @@
             d.scrollDes = (des=='x'?'scrollLeft':'scrollTop');
             d.getEventPos = 'getEvent'+des;
             ele.css('overflow-'+des, 'hidden');
+            d.MIN_DIS = 2;
             
-            ele.mousedown(function(e){
+	        ele.mousedown(function(e){
 	            d.positionStart = d[d.getEventPos]();
 	            function syncScroll(e){
 	                var positionEnd = d[d.getEventPos]();
 	                var moveSize = d.positionStart - positionEnd;
-	                d.positionStart = d[d.getEventPos]();
-	                var result = ele.attr(d.scrollDes)*1 + moveSize;
-	                ele.attr(d.scrollDes, result);
+	                if(moveSize>d.MIN_DIS||moveSize<(-1*d.MIN_DIS)){
+		                d.positionStart = d[d.getEventPos]();
+		                var result = ele.attr(d.scrollDes)*1 + moveSize;
+		                ele.attr(d.scrollDes, result);
+	                }
 	            }
 	            $(document.body).one('mouseup', function(){
-	                ele.unbind('mousemove', syncScroll);
+	                $(document.body).unbind('mousemove', syncScroll);
 	            });
-	            ele.mousemove(syncScroll);
+	            $(document.body).mousemove(syncScroll);
 	        })
         },
 	    getEventx: function(evt) {
@@ -76,8 +79,6 @@
 	        }
 	    }
 	});
-	
-	var ScrollHandle = new Class;
 	
 	exports.prototype.scrollHeaderOf = function(scrollBody, desFilter){
 	    var scrollHeader = $(this);

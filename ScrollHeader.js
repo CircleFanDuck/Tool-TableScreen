@@ -14,7 +14,7 @@
 	                var positionEnd = d[d.getEventPos]();
 	                var moveSize = d.positionStart - positionEnd;
 	                if(moveSize>d.MIN_DIS||moveSize<(-1*d.MIN_DIS)){
-		                d.positionStart = d[d.getEventPos]();
+		                d.positionStart = d[d.getEventPos](); 
 		                var result = ele.attr(d.scrollDes)*1 + moveSize;
 		                ele.attr(d.scrollDes, result);
 	                }

@@ -1,7 +1,7 @@
 (function(exports){
-	var TableScreen = new Class;
+	var Header = new Class;
 
-	TableScreen.include({
+	Header.include({
 	    init: function(headerContent, tableContent, filterMap, btnContent){
 	        var t = this;
 			t.seqName = filterMap.x||filterMap.y;
@@ -192,7 +192,7 @@
 
 	exports.prototype.headOf = function(tableContent, filterMap, btnContent){
 	    var headerContent = $(this);
-	    var t = new TableScreen(headerContent, tableContent, filterMap, btnContent);
+	    var t = new Header(headerContent, tableContent, filterMap, btnContent);
 	    return headerContent;
 	}
 })($);

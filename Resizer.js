@@ -36,14 +36,15 @@
 	        //bind and set default size
 	        r.resizeFlat = false;
 
-
 	        r.resizableStart();
-	        r.root.resize();
 	    },
 	    getSize: function(ele){
 	        return ele[this.sizeFunc]();
 	    },
 	    setSize: function(ele, size){
+	        if(ele[this.sizeFunc]()!=size){
+	            ele.resize();
+	        }
 	        return ele[this.sizeFunc](size);
 	    },
 	    getNSize: function(ele){
@@ -57,23 +58,18 @@
 	    },
 	    getInitSize: function(){
 	        var option = this.option;
-	        if(option.initSize==undefined){
-	            return this.oriSize;
-	        }
-	        if(this.oriSize  > option.initSize){
+	        if(option.initSize!=undefined
+	            &&this.regSize  > option.initSize){
 	            return option.initSize;
 	        }
-	        return this.oriSize;
-	    },
-	    defaultFunc: function(){
-	        return true;
+	        return this.regSize;
 	    },
 	    inRange: function(val){
-	        var checkFunc = this.option.rangeCheck||this.defaultFunc;
+	        var checkFunc = this.option.rangeCheck||jQuery.noop();
 	        return checkFunc(val);
 	    },
 	    inEffective: function(){
-	        var checkFunc = this.option.effectiveCheck||this.defaultFunc;
+	        var checkFunc = this.option.effectiveCheck||jQuery.noop();
 	    	return checkFunc(this);	    
 	    },
 	    isResizing: function(){
@@ -146,7 +142,7 @@
 	        r.root.resize();
 	    },
 	    resizableEnd: function(){
-	        this.stopResizable();  
+	        this.stopResizable();
 	    },
 	    distroy: function(){
 	        this.resizableEnd();
@@ -193,11 +189,11 @@
 	        var resizePos = r.getLeftTopCorner(r.root);
 		    if(r.root.filter(r.resizeClass).length!=0){
 	            var newSize = r.approachSmartLine(des, r.getEventPostion(e) - resizePos[des]);
-	            
 	            if(!r.inRange(newSize)){
 	                return;
 	            }
 	            r.setSize(r.root, newSize);
+	            this.regSize = newSize;
 		        var style = r.positionFuc +':' + r.getEventPostion(e);
 		        r.resizer.attr('style', r.resizer.attr('style')+ style+';');
 		    }
@@ -215,8 +211,10 @@
 	        var flag = r.inResizeFuzzyField(e, r.FUZZY_WEIGHT, des);
 		    if(this.inEffective(this)&&flag){
 		        r.startHover(des);
+		        return true;
 		    }else{
 		        r.endHover(des);
+		        return false;
 		    }
 	    },
 	    startHover: function(des){
@@ -251,6 +249,7 @@
 	        var r = this;
 	        r.root.removeClass('resizing'+des);
 	        r.resizer.css('background', r.HOVER);
+	        r.setHover(des);
 	    },
 	    getLeftTopCorner: function(ele){
 	        var base = ele.offset();
@@ -323,7 +322,9 @@
 		        resize.distroy();
 		    }
 		    option.startResizable = function(){
-		        resize.resizableStart();
+		        if(resize.isResizing()){
+		            resize.resizableStart();
+		        }
 		    }
 		    option.isResizing = function(){
 		        return resize.isResizing();

@@ -1,37 +1,64 @@
 (function(exports){
     var SortHandle = new Class;
     SortHandle.include({
+        getElesMap: function(domRoot, sortName){
+			var eleFirst = domRoot.find('['+sortName+']:first')
+			var eles = $.merge([], eleFirst);
+			eles = $.merge(eleFirst, eleFirst.siblings('['+sortName+']'));
+			var elesMap = new Object();
+			
+			for(var i=0; i<eles.length; i++){
+			    var ele = $(eles[i]);
+			    var key = ele.attr(sortName);
+			    if(elesMap[ele.attr(sortName)]==undefined){
+			        elesMap[key] = ele;
+			    } else {
+			        elesMap[key] = $.merge([ele], elesMap[key]);
+			    }
+			}
+			return elesMap;
+        },
         getSortArr: function(domRoot, sortName, sortFactory){
-  		var sortVal = [];
-			var eles = domRoot.find('['+sortName+']');
+			var sortVal = [];
+			var elesMap = this.getElesMap(domRoot, sortName);
+
 			if ($.isArray(sortFactory)){
 			    sortVal = sortFactory;
 			} else{
-				eles.each(function(){
-				    var ele = $(this);
-				    var val = $(ele).attr(sortName);
-				    sortVal.push(val);
-				})
-				
+				$.each(elesMap, function(index, value){
+			        sortVal.push(index);
+			    }); 
 				if($.isFunction(sortFactory)){
-			        sortVal = sortFactory(sortVal);
+				    sortVal = this.sortByCompareFunc(sortVal, sortFactory);
 				} else {
 			        sortVal = $(sortVal).sort();
 				}
 			}
 			
-			var filterFactory = function (sortName){
-			    return function(sortVal){ 
-			        return '['+sortName+'="'+sortVal+'"]';
-			    }
-			}
-			
-			this.sortDomByAttr(domRoot, eles, sortVal, filterFactory(sortName));
+			this.sortDomByAttr(domRoot, elesMap, sortVal);
         },
-		sortDomByAttr: function(domRoot, eles, sortVal, filter){
+		sortByCompareFunc: function(sortVal, sortFactory){
+			var sortedVal = [];
+			for(var i =0; i<sortVal.length; i++){
+			   	var current = sortVal[i];
+			   	for(var j=0; j<=sortedVal.length; j++){
+			   	    if(j==sortedVal.length){
+			   	        sortedVal.push(current);
+			   	        break;
+			   	    }
+			   	    var val = sortedVal[j];
+			   	    //val < current
+			   	    if(sortFactory(val, current)||sortFactory(val, current)<0){
+			   	        sortedVal[j] = current;
+			   	        current = val;
+			   	    }
+			   	}
+			}
+			return sortedVal;
+		},
+		sortDomByAttr: function(domRoot, elesMap, sortVal){
 			for(var i=0; sortVal[i]; i++){
-			    var f = filter(sortVal[i]);
-			    domRoot.append(eles.filter(f));
+			    domRoot.append(elesMap[sortVal[i]]);
 			}
 		}
     });
